@@ -173,4 +173,99 @@ describe('Render task definition', () => {
 
         expect(core.setFailed).toBeCalledWith('Invalid task definition: Could not find container definition with matching name');
     });
+
+    test('set environment for task definition without environment', async () => {
+        jest.mock('./env-task-definition.json', () => ({
+            family: 'task-def-family',
+            containerDefinitions: [
+                {
+                    name: "web",
+                    image: null,
+                    environment: null 
+                }
+            ]
+        }), { virtual: true });
+
+        core.getInput = jest
+            .fn()
+            .mockReturnValueOnce('env-task-definition.json') // task-definition
+            .mockReturnValueOnce('web')                  // container-name
+            .mockReturnValueOnce('nginx:latest')         // image
+            .mockReturnValueOnce('PORT: 80\nNODE_ENV: production'); // environment
+        
+        await run();
+
+        expect(fs.writeFileSync).toHaveBeenNthCalledWith(1, 'new-task-def-file-name',
+            JSON.stringify({
+                family: 'task-def-family',
+                containerDefinitions: [
+                    {
+                        name: "web",
+                        image: "nginx:latest",
+                        environment: [
+                            {
+                                name: "PORT",
+                                value: "80"
+                            },
+                            {
+                                name: "NODE_ENV",
+                                value: "production"
+                            }
+                        ] 
+                    }
+                ]
+            }, null, 2)
+        );
+        expect(core.setOutput).toHaveBeenNthCalledWith(1, 'task-definition', 'new-task-def-file-name');
+    });
+
+    test('set environment for task definition with existing environments', async () => {
+        jest.mock('./env-task-definition.json', () => ({
+            family: 'task-def-family',
+            containerDefinitions: [
+                {
+                    name: "web",
+                    image: null,
+                    environment: [
+                        {
+                            name: "PORT",
+                            value: "5000"
+                        }
+                    ] 
+                }
+            ]
+        }), { virtual: true });
+
+        core.getInput = jest
+            .fn()
+            .mockReturnValueOnce('env-task-definition.json') // task-definition
+            .mockReturnValueOnce('web')                  // container-name
+            .mockReturnValueOnce('nginx:latest')         // image
+            .mockReturnValueOnce('PORT: 80 \n NODE_ENV : production '); // environment
+        
+        await run();
+
+        expect(fs.writeFileSync).toHaveBeenNthCalledWith(1, 'new-task-def-file-name',
+            JSON.stringify({
+                family: 'task-def-family',
+                containerDefinitions: [
+                    {
+                        name: "web",
+                        image: "nginx:latest",
+                        environment: [
+                            {
+                                name: "PORT",
+                                value: "80"
+                            },
+                            {
+                                name: "NODE_ENV",
+                                value: "production"
+                            }
+                        ] 
+                    }
+                ]
+            }, null, 2)
+        );
+        expect(core.setOutput).toHaveBeenNthCalledWith(1, 'task-definition', 'new-task-def-file-name');
+    });
 });

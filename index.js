@@ -9,6 +9,7 @@ async function run() {
     const taskDefinitionFile = core.getInput('task-definition', { required: true });
     const containerName = core.getInput('container-name', { required: true });
     const imageURI = core.getInput('image', { required: true });
+    const envs = core.getInput('environment');
 
     // Parse the task definition
     const taskDefPath = path.isAbsolute(taskDefinitionFile) ?
@@ -30,6 +31,25 @@ async function run() {
       throw new Error('Invalid task definition: Could not find container definition with matching name');
     }
     containerDef.image = imageURI;
+
+    // Setup container environment
+    if (envs) {
+      // lord existing envs
+      const newEnvs = containerDef.environment || [];
+
+      const envList = envs.split(/\r?\n/);
+      envList.forEach((e) => {
+        const [envName, envValue] = e.split(':').map((s) => s.trim());
+        const existingEnv = newEnvs.find((env) => env.name == envName);
+        if (existingEnv) {
+          existingEnv.value = envValue;
+        } else {
+          newEnvs.push({ name: envName, value: envValue });
+        }
+      });
+
+      containerDef.environment = newEnvs;
+    }
 
     // Write out a new task definition file
     var updatedTaskDefFile = tmp.fileSync({

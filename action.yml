@@ -13,6 +13,9 @@ inputs:
   image:
     description: 'The URI of the container image to insert into the ECS task definition'
     required: true
+  environment:
+    description: 'The environment variables to pass to docker run, it overrides values for existing envs defined in task definition'
+    required: false
 outputs:
   task-definition:
     description: 'The path to the rendered task definition file'
