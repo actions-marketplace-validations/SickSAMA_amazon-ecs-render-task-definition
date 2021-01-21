@@ -1,4 +1,4 @@
-name: 'Extend Amazon's "Render Task Definition" Action for Setting Environment Variables'
+name: 'Extend Amazon "Render Task Definition" Action for Setting Environment Variables'
 description: 'Inserts a container image URI into a container definition in an Amazon ECS task definition JSON file, creating a new file.'
 branding:
   icon: 'cloud'

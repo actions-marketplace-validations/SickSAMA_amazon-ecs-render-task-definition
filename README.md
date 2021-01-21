@@ -1,8 +1,8 @@
-## Amazon ECS "Render Task Definition" Action for GitHub Actions
+## Fork of Amazon ECS "Render Task Definition" Action for GitHub Actions
 
 Inserts a container image URI into an Amazon ECS task definition JSON file, creating a new task definition file.
 
-This is a fork from `aws-actions/amazon-ecs-deploy-task-definition`. The added feature is to support overriding `environment` in task defition. `environment` sets the envs to pass to docker run.
+This is a fork from `aws-actions/amazon-ecs-deploy-task-definition`. The added feature is to support overriding `environment` in task definition. `environment` sets the envs to pass to `docker run`.
 
 ## Usage
 
