@@ -16,6 +16,9 @@ inputs:
   environment:
     description: 'The environment variables to pass to docker run, it overrides values for existing envs defined in task definition'
     required: false
+  port-mappings:
+    description: 'The portMappings setting which will override the existing ones defined in task definiton'
+    required: false
 outputs:
   task-definition:
     description: 'The path to the rendered task definition file'

@@ -10,6 +10,7 @@ async function run() {
     const containerName = core.getInput('container-name', { required: true });
     const imageURI = core.getInput('image', { required: true });
     const envs = core.getInput('environment');
+    const portMappings = core.getInput('port-mappings');
 
     // Parse the task definition
     const taskDefPath = path.isAbsolute(taskDefinitionFile) ?
@@ -49,6 +50,21 @@ async function run() {
       });
 
       containerDef.environment = newEnvs;
+    }
+
+    // Override port mappings
+    if (portMappings) {
+      const portMappingList = portMappings.split(/\r?\n/);
+      const newPortMappings = [];
+      portMappingList.forEach((p) => {
+        const [hostPort, containerPort, protocol] = p.split(/[:/]/).map((s) => s.trim());
+        newPortMappings.push({
+          hostPort: +hostPort,
+          containerPort: +containerPort,
+          protocol
+        });
+      })
+      containerDef.portMappings = newPortMappings;
     }
 
     // Write out a new task definition file

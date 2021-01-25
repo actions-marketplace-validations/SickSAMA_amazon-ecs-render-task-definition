@@ -220,7 +220,7 @@ describe('Render task definition', () => {
     });
 
     test('set environment for task definition with existing environments', async () => {
-        jest.mock('./env-task-definition.json', () => ({
+        jest.mock('./env-existing-task-definition.json', () => ({
             family: 'task-def-family',
             containerDefinitions: [
                 {
@@ -230,6 +230,10 @@ describe('Render task definition', () => {
                         {
                             name: "PORT",
                             value: "5000"
+                        },
+                        {
+                            name: "HOST",
+                            value: "localhost"
                         }
                     ] 
                 }
@@ -238,7 +242,7 @@ describe('Render task definition', () => {
 
         core.getInput = jest
             .fn()
-            .mockReturnValueOnce('env-task-definition.json') // task-definition
+            .mockReturnValueOnce('env-existing-task-definition.json') // task-definition
             .mockReturnValueOnce('web')                  // container-name
             .mockReturnValueOnce('nginx:latest')         // image
             .mockReturnValueOnce('PORT: 80 \n NODE_ENV : production '); // environment
@@ -258,10 +262,68 @@ describe('Render task definition', () => {
                                 value: "80"
                             },
                             {
+                                name: "HOST",
+                                value: "localhost"
+                            },
+                            {
                                 name: "NODE_ENV",
                                 value: "production"
                             }
                         ] 
+                    }
+                ]
+            }, null, 2)
+        );
+        expect(core.setOutput).toHaveBeenNthCalledWith(1, 'task-definition', 'new-task-def-file-name');
+    });
+
+    test('set port mappings for task definition', async () => {
+        jest.mock('./port-mappings-task-definition.json', () => ({
+            family: 'task-def-family',
+            containerDefinitions: [
+                {
+                    name: "web",
+                    image: null,
+                    portMappings: [
+                        {
+                            hostPort: 5000,
+                            protocol: "tcp",
+                            containerPort: 5000
+                        }
+                    ]
+                }
+            ]
+        }), { virtual: true });
+
+        core.getInput = jest
+            .fn()
+            .mockReturnValueOnce('port-mappings-task-definition.json') // task-definition
+            .mockReturnValueOnce('web')                  // container-name
+            .mockReturnValueOnce('nginx:latest')         // image
+            .mockReturnValueOnce('') // environment
+            .mockReturnValueOnce('80:80/tcp \n 443 :443/tcp'); // port mappings
+        
+        await run();
+
+        expect(fs.writeFileSync).toHaveBeenNthCalledWith(1, 'new-task-def-file-name',
+            JSON.stringify({
+                family: 'task-def-family',
+                containerDefinitions: [
+                    {
+                        name: "web",
+                        image: "nginx:latest",
+                        portMappings: [
+                            {
+                                hostPort: 80,
+                                containerPort: 80,
+                                protocol: "tcp"
+                            },
+                            {
+                                hostPort: 443,
+                                containerPort: 443,
+                                protocol: "tcp"
+                            }
+                        ]
                     }
                 ]
             }, null, 2)

@@ -19,6 +19,9 @@ To insert the image URI `amazon/amazon-ecs-sample:latest` as the image for the `
     environment: |-
       PORT: 80
       NODE_ENV: production
+    port-mappings: |-
+      80:80/tcp
+      443:443/tcp
 
 - name: Deploy to Amazon ECS service
   uses: aws-actions/amazon-ecs-deploy-task-definition@v1
